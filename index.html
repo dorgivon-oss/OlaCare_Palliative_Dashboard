@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OlaCare Dashboard - מערכת פליאטיבית</title>
+
+  <!-- Tailwind (UI מהיר) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Identity Services (ללא redirect) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- אייקונים קטנים -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/font/lucide.css">
+
+  <style>
+    body { background:#0b0f14; color:#e9eff6; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial }
+    .card { background:#111a24; border:1px solid #1e2a39; border-radius:16px }
+    .btn  { background:#2563eb; color:#fff; border-radius:12px; padding:.65rem 1rem; font-weight:600; }
+    .btn.secondary { background:#162131; border:1px solid #1e2a39; color:#9bb8ff }
+    .muted { color:#8ea0b5 }
+    .input, select, textarea { background:#0f141b; color:#e9eff6; border:1px solid #1e2a39; border-radius:10px; padding:.55rem .75rem }
+    .ok  { color:#22c55e } .warn{ color:#f59e0b } .crit{ color:#f87171 }
+    .link{ color:#7bd6ff; text-decoration:underline; cursor:pointer }
+    table { width:100% } th, td { padding: .6rem .4rem; border-bottom:1px solid #132034; }
+    .kbd { background:#0f141b; border:1px solid #1e2a39; padding:.15rem .4rem; border-radius:.4rem; font-size:.8rem }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl md:text-3xl font-bold">OlaCare Dashboard - מערכת פליאטיבית</h1>
+        <span id="envBadge" class="kbd muted">פרודקשן</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="connectBtn" class="btn">התחבר עם Google Drive</button>
+        <button id="openGptBtn" class="btn secondary" title="פתח את סוכן ה-GPT בחלון חדש">GPT סוכן</button>
+        <span id="userChip" class="muted text-sm"></span>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="card p-4">
+        <div class="muted text-sm">מטופלים דחופים</div>
+        <div class="text-3xl font-bold mt-1"><span id="kpiUrgent">-</span></div>
+        <div class="muted text-xs mt-1">סטטוס “דחוף”</div>
+      </div>
+      <div class="card p-4">
+        <div class="muted text-sm">מטופלים במעקב</div>
+        <div class="text-3xl font-bold mt-1"><span id="kpiFollow">-</span></div>
+        <div class="muted text-xs mt-1">סטטוס “במעקב”</div>
+      </div>
+      <div class="card p-4">
+        <div class="muted text-sm">סה״כ מטופלים</div>
+        <div class="text-3xl font-bold mt-1"><span id="kpiTotal">-</span></div>
+        <div class="muted text-xs mt-1">מבוסס על קובץ ה-Drive</div>
+      </div>
+    </div>
+
+    <!-- Patients + actions -->
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="md:col-span-2 card p-4">
+        <div class="flex items-center justify-between gap-2">
+          <div class="text-xl font-bold">רשימת מטופלים</div>
+          <div class="flex items-center gap-2">
+            <input id="searchBox" class="input" placeholder="...חפש מטופל" />
+            <button id="addPatientBtn" class="btn">+ הוסף מטופל חדש</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto mt-3">
+          <table>
+            <thead class="muted text-sm">
+              <tr>
+                <th class="text-right">שם</th>
+                <th class="text-right">גיל</th>
+                <th class="text-right">אבחנה</th>
+                <th class="text-right">סטטוס</th>
+                <th class="text-right">פעולות</th>
+              </tr>
+            </thead>
+            <tbody id="patientsTbody"></tbody>
+          </table>
+          <div id="emptyState" class="muted text-sm mt-3 hidden">אין מטופלים בקובץ.</div>
+        </div>
+      </div>
+
+      <div class="card p-4">
+        <div class="text-xl font-bold mb-2">סטטיסטיקות מטופלים</div>
+        <div id="statsPanel" class="text-sm muted">—</div>
+        <div class="mt-3"><button id="saveFileBtn" class="btn secondary">שמור קובץ</button></div>
+      </div>
+    </div>
+
+    <!-- Smart query + session log -->
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="card p-4">
+        <div class="text-xl font-bold">שאילתא חכמה אל הסוכן</div>
+        <textarea id="nlq" class="input w-full mt-2" rows="3" placeholder="לדוגמה: הצג מטופלים דחופים שאין להם ביקור בשבוע הקרוב"></textarea>
+        <div class="mt-2 flex gap-2">
+          <button id="askGptBtn" class="btn">שאל את הסוכן</button>
+          <div id="gptHint" class="muted text-xs hidden">אם חלון נחסם, לחץ <span id="manualOpen" class="link">פתח את הסוכן</span>.</div>
+        </div>
+        <div id="nlqResult" class="mt-3 muted text-sm"></div>
+      </div>
+
+      <div class="card p-4">
+        <div class="text-xl font-bold">יומן פעולות (Sessions)</div>
+        <div id="sessionLog" class="muted text-sm">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- מודאל הוספה/עריכה -->
+  <dialog id="patientModal" class="card p-0 w-[min(560px,92vw)]">
+    <form method="dialog" class="p-4 space-y-3">
+      <div class="text-xl font-bold" id="modalTitle">מטופל חדש</div>
+      <div class="grid md:grid-cols-2 gap-3">
+        <div>
+          <label class="muted text-sm">שם</label>
+          <input id="f_name" class="input w-full" required />
+        </div>
+        <div>
+          <label class="muted text-sm">גיל</label>
+          <input id="f_age" type="number" min="0" class="input w-full" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="muted text-sm">אבחנה</label>
+          <input id="f_dx" class="input w-full" />
+        </div>
+        <div>
+          <label class="muted text-sm">סטטוס</label>
+          <select id="f_status" class="input w-full">
+            <option value="במעקב">במעקב</option>
+            <option value="דחוף">דחוף</option>
+            <option value="יציב">יציב</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button class="btn secondary" value="close">ביטול</button>
+        <button id="savePatientBtn" class="btn" value="save">שמור</button>
+      </div>
+    </form>
+  </dialog>
+
+<script>
+/** ====== קונפיגורציה ====== */
+const CLIENT_ID  = "612293651011-oshbbu34j1n6kli5k8fblgmgjb5odj1l.apps.googleusercontent.com";
+const SCOPES     = [
+  "https://www.googleapis.com/auth/drive.file",
+  "https://www.googleapis.com/auth/drive.readonly",
+  "https://www.googleapis.com/auth/drive.metadata.readonly",
+  "openid","email","profile"
+].join(" ");
+
+const PATIENTS_FILE_ID = "1bmG2LiCDkbuedw4-Ku-mL3_eUm44Z3Zr";
+const SESSIONS_FILE_NAME = "Palliative_Sessions.json";
+
+const GPT_URL = "https://chatgpt.com/g/g-68fb73c350648191814c5a98839ee8ac-palliative-intelligence-agent-bilingual-copy";
+
+/** ====== State ====== */
+let accessToken = null;
+let tokenExpires = 0;
+let userProfile = null;
+let patients = [];
+let sessionFileId = null;
+let editIndex = -1;
+
+/** ====== Helpers ====== */
+const qs = sel => document.querySelector(sel);
+const qsa = sel => Array.from(document.querySelectorAll(sel));
+const byId = id => document.getElementById(id);
+
+function nowIso(){ return new Date().toISOString(); }
+function needToken(){ return !accessToken || Date.now() > tokenExpires-30_000; }
+
+function setUserChip(){
+  const el = byId("userChip");
+  if(userProfile){
+    el.textContent = `מחובר: ${userProfile.email || userProfile.name || "משתמש"}`;
+  } else el.textContent = "איכסון: לא מחובר";
+}
+
+function openGPT(auto=true){
+  try{
+    const w = window.open(GPT_URL, auto ? "_blank" : "_self", "noopener");
+    if(!w) byId("gptHint").classList.remove("hidden");
+  }catch{ byId("gptHint").classList.remove("hidden"); }
+}
+
+/** ====== OAuth (GIS Token Client) ====== */
+let tokenClient = null;
+
+function initOAuth(){
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    prompt: "", // ננסה להתחבר בשקט, אם אי אפשר - יופיע prompt
+    callback: (resp) => {
+      if(resp && resp.access_token){
+        accessToken = resp.access_token;
+        tokenExpires = Date.now() + (resp.expires_in*1000);
+        fetchProfile().then(() => {
+          setUserChip();
+          // אחרי התחברות מוצלחת - פתח את הסוכן אוטומטית
+          openGPT(true);
+          bootstrap();
+        });
+      } else {
+        alert("התחברות נכשלה.");
+      }
+    }
+  });
+}
+
+async function ensureToken(){
+  if(needToken()){
+    return new Promise((resolve)=>{
+      tokenClient.callback = (resp) => {
+        if(resp && resp.access_token){
+          accessToken = resp.access_token;
+          tokenExpires = Date.now() + (resp.expires_in*1000);
+          resolve();
+        } else resolve();
+      };
+      tokenClient.requestAccessToken();
+    });
+  }
+}
+
+async function fetchProfile(){
+  await ensureToken();
+  const resp = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+    headers: { Authorization: "Bearer "+accessToken }
+  });
+  userProfile = await resp.json().catch(()=>null);
+}
+
+/** ====== Drive API ====== */
+async function driveGetFileContent(fileId){
+  await ensureToken();
+  const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+    headers: { Authorization: "Bearer "+accessToken }
+  });
+  if(!resp.ok){
+    if(resp.status===404) return null;
+    throw new Error("Drive get failed");
+  }
+  return await resp.json().catch(()=>null);
+}
+
+async function drivePatchJson(fileId, obj){
+  await ensureToken();
+  const resp = await fetch(
+    `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
+    {
+      method: "PATCH",
+      headers: {
+        "Authorization": "Bearer "+accessToken,
+        "Content-Type": "application/json; charset=UTF-8"
+      },
+      body: JSON.stringify(obj)
+    }
+  );
+  if(!resp.ok) throw new Error("Drive patch failed");
+  return await resp.json().catch(()=>null);
+}
+
+async function driveSearchByName(name){
+  await ensureToken();
+  const q = encodeURIComponent(`name='${name.replaceAll("'", "\\'")}' and trashed=false`);
+  const resp = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`, {
+    headers: { Authorization: "Bearer "+accessToken }
+  });
+  const data = await resp.json().catch(()=>({files:[]}));
+  return (data.files && data.files[0]) ? data.files[0] : null;
+}
+
+async function driveCreateJsonFile(name, obj){
+  await ensureToken();
+  // יצירה -> עדכון תוכן
+  const metaResp = await fetch("https://www.googleapis.com/drive/v3/files", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer "+accessToken,
+      "Content-Type": "application/json; charset=UTF-8"
+    },
+    body: JSON.stringify({ name, mimeType: "application/json" })
+  });
+  if(!metaResp.ok) throw new Error("Create file failed");
+  const meta = await metaResp.json();
+  await drivePatchJson(meta.id, obj);
+  return meta;
+}
+
+/** ====== Patients / Sessions ====== */
+async function loadPatients(){
+  const data = await driveGetFileContent(PATIENTS_FILE_ID);
+  patients = Array.isArray(data) ? data : (data?.patients ?? []);
+  if(!Array.isArray(patients)) patients = [];
+}
+
+async function savePatients(){
+  await drivePatchJson(PATIENTS_FILE_ID, patients);
+}
+
+async function ensureSessionsFile(){
+  const found = await driveSearchByName(SESSIONS_FILE_NAME);
+  if(found){ sessionFileId = found.id; return; }
+  const meta = await driveCreateJsonFile(SESSIONS_FILE_NAME, []);
+  sessionFileId = meta.id;
+}
+
+async function appendSession(event){
+  if(!sessionFileId) await ensureSessionsFile();
+  const log = await driveGetFileContent(sessionFileId) || [];
+  log.push({
+    ts: nowIso(),
+    user: userProfile?.email || "anonymous",
+    event
+  });
+  await drivePatchJson(sessionFileId, log);
+  renderSessions(log);
+}
+
+/** ====== UI Rendering ====== */
+function renderPatients(){
+  const body = byId("patientsTbody");
+  body.innerHTML = "";
+  const term = byId("searchBox").value.trim().toLowerCase();
+
+  const filtered = patients.filter(p =>
+    !term ||
+    (p.name||"").toLowerCase().includes(term) ||
+    (p.dx||"").toLowerCase().includes(term)
+  );
+
+  if(filtered.length===0){
+    byId("emptyState").classList.remove("hidden");
+  } else byId("emptyState").classList.add("hidden");
+
+  for(const [i,p] of filtered.entries()){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(p.name||"")}</td>
+      <td>${p.age ?? ""}</td>
+      <td>${escapeHtml(p.dx||"")}</td>
+      <td>
+        <select data-idx="${i}" class="input statusSel">
+          ${["במעקב","דחוף","יציב"].map(s=>`<option ${p.status===s?"selected":""}>${s}</option>`).join("")}
+        </select>
+      </td>
+      <td>
+        <button class="btn secondary editBtn" data-idx="${i}">ערוך</button>
+        <button class="btn secondary delBtn"  data-idx="${i}">מחק</button>
+      </td>
+    `;
+    body.appendChild(tr);
+  }
+
+  // האזנות
+  qsa(".statusSel").forEach(sel=>{
+    sel.addEventListener("change", async (e)=>{
+      const idx = Number(e.target.getAttribute("data-idx"));
+      const p = filtered[idx];
+      // מצא אינדקס אמיתי ברשימה המלאה
+      const realIndex = patients.findIndex(x=>x===p);
+      patients[realIndex].status = e.target.value;
+      await savePatients();
+      await appendSession({type:"status_change", id:patients[realIndex].id||null, status:e.target.value});
+      computeKpis();
+    });
+  });
+  qsa(".editBtn").forEach(btn=>{
+    btn.addEventListener("click",(e)=>{
+      const idx = Number(e.currentTarget.getAttribute("data-idx"));
+      const p = filtered[idx];
+      editIndex = patients.findIndex(x=>x===p);
+      openModal(p);
+    });
+  });
+  qsa(".delBtn").forEach(btn=>{
+    btn.addEventListener("click", async (e)=>{
+      const idx = Number(e.currentTarget.getAttribute("data-idx"));
+      const p = filtered[idx];
+      const realIndex = patients.findIndex(x=>x===p);
+      if(confirm(`למחוק את "${patients[realIndex].name}"?`)){
+        const removed = patients.splice(realIndex,1)[0];
+        await savePatients();
+        await appendSession({type:"delete_patient", id:removed.id||null, name:removed.name});
+        renderPatients();
+        computeKpis();
+      }
+    });
+  });
+}
+
+function computeKpis(){
+  byId("kpiTotal").textContent  = String(patients.length);
+  byId("kpiUrgent").textContent = String(patients.filter(p=>p.status==="דחוף").length);
+  byId("kpiFollow").textContent = String(patients.filter(p=>p.status==="במעקב").length);
+  byId("statsPanel").textContent =
+    `דחוף: ${byId("kpiUrgent").textContent} • במעקב: ${byId("kpiFollow").textContent} • סה״כ: ${byId("kpiTotal").textContent}`;
+}
+
+function renderSessions(list){
+  const el = byId("sessionLog");
+  if(!Array.isArray(list) || list.length===0){ el.textContent = "—"; return; }
+  el.innerHTML = list.slice(-15).reverse().map(s =>
+    `<div class="mb-1"><span class="muted">${escapeHtml(s.ts)}</span> • ${escapeHtml(s.user)} • ${escapeHtml(JSON.stringify(s.event))}</div>`
+  ).join("");
+}
+
+/** ====== Modal ====== */
+function openModal(p=null){
+  byId("modalTitle").textContent = p ? "עריכת מטופל" : "מטופל חדש";
+  byId("f_name").value   = p?.name || "";
+  byId("f_age").value    = p?.age ?? "";
+  byId("f_dx").value     = p?.dx || "";
+  byId("f_status").value = p?.status || "במעקב";
+  byId("patientModal").showModal();
+}
+function closeModal(){
+  byId("patientModal").close();
+}
+
+byId("savePatientBtn").addEventListener("click", async (e)=>{
+  e.preventDefault();
+  const item = {
+    id: crypto.randomUUID(),
+    name: byId("f_name").value.trim(),
+    age: Number(byId("f_age").value||0),
+    dx:  byId("f_dx").value.trim(),
+    status: byId("f_status").value
+  };
+  if(!item.name){ alert("שם נדרש"); return; }
+
+  if(editIndex>=0){
+    patients[editIndex] = { ...patients[editIndex], ...item, id: patients[editIndex].id || item.id };
+    await savePatients();
+    await appendSession({type:"update_patient", id:patients[editIndex].id, name:item.name});
+  } else {
+    patients.push(item);
+    await savePatients();
+    await appendSession({type:"create_patient", id:item.id, name:item.name});
+  }
+  editIndex = -1;
+  closeModal();
+  renderPatients();
+  computeKpis();
+});
+
+/** ====== NLQ to GPT (dummy hook) ======
+ * בפועל, פתיחת הסוכן היא בחלון חדש לשיחה ישירה.
+ * כאן אנחנו מתעדים את השאילתה ב-Sessions ושומרים בתצוגה.
+ */
+byId("askGptBtn").addEventListener("click", async ()=>{
+  const q = byId("nlq").value.trim();
+  if(!q){ byId("nlqResult").textContent = "נא להזין שאילתא."; return; }
+  await appendSession({type:"nlq", q});
+  byId("nlqResult").textContent = "השאילתה תועדה ונשלחה לסוכן. המשך את השיח בחלון ה-GPT.";
+  openGPT(false);
+});
+
+/** ====== Bootstrap ====== */
+function escapeHtml(s){ return (s??"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+
+async function bootstrap(){
+  await ensureSessionsFile();
+  renderSessions(await driveGetFileContent(sessionFileId) || []);
+  await loadPatients();
+  renderPatients();
+  computeKpis();
+}
+
+/** ====== UI events ====== */
+byId("connectBtn").addEventListener("click", ()=>{
+  tokenClient.requestAccessToken({prompt: ""});
+});
+byId("openGptBtn").addEventListener("click", ()=> openGPT(true));
+byId("manualOpen").addEventListener("click", ()=> openGPT(true));
+byId("addPatientBtn").addEventListener("click", ()=>{ editIndex=-1; openModal(); });
+byId("saveFileBtn").addEventListener("click", async ()=>{
+  await savePatients();
+  await appendSession({type:"manual_save"});
+  alert("הקובץ נשמר בהצלחה.");
+});
+byId("searchBox").addEventListener("input", renderPatients);
+
+/** ====== Auto start: ננסה להתחבר ולפתוח סוכן בלי שאלות ====== */
+window.addEventListener("load", ()=>{
+  initOAuth();
+  // ניסיון אוטומטי לשקט. אם נחסם ע״י הדפדפן, המשתמש יראה את כפתור "התחבר".
+  setTimeout(()=> {
+    tokenClient.requestAccessToken({prompt: ""});
+  }, 300);
+});
+</script>
+</body>
+</html>
