@@ -1,506 +1,332 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OlaCare Dashboard - מערכת פליאטיבית</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OlaCare — Technology Landscape</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F1EC;--dark:#1A2332;--text:#2C2C2C;--text-light:#6B6B6B;--accent:#3D7B6F;--accent-light:#E8F0ED;--red:#B84444;--red-light:#FDEBEB;--orange:#C4653A;--orange-light:#FDF0EB;--border:#D5D0C8;--card:#FFFFFF;--serif:'Instrument Serif',Georgia,serif;--sans:'DM Sans',-apple-system,sans-serif;--mono:'DM Mono',monospace;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;}
+.header{background:var(--dark);padding:40px 48px;display:flex;align-items:center;justify-content:space-between;}
+.header-left{display:flex;align-items:center;gap:20px;}
+.logo-pill{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:40px;padding:10px 28px;font-family:var(--mono);font-size:14px;letter-spacing:3px;color:#fff;text-transform:uppercase;}
+.header-title{font-family:var(--serif);font-size:28px;color:#fff;font-weight:400;}
+.header-tag{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.45);text-transform:uppercase;}
+.wrap{max-width:960px;margin:0 auto;padding:0 48px;}
+.section-divider{margin-top:48px;font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--text-light);text-transform:uppercase;padding-bottom:16px;border-bottom:1px solid var(--border);}
 
-  <!-- Tailwind (UI מהיר) -->
-  <script src="https://cdn.tailwindcss.com"></script>
+/* TABS — clear distinction */
+.tabs-row{display:flex;gap:4px;margin-top:20px;margin-bottom:0;}
+.tab-btn{font-family:var(--mono);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:14px 28px;background:var(--card);border:1.5px solid var(--border);border-bottom:none;border-radius:8px 8px 0 0;color:var(--text-light);cursor:pointer;transition:all 0.2s;position:relative;top:2px;}
+.tab-btn:hover{color:var(--dark);background:#fff;}
+.tab-btn.active{color:var(--dark);font-weight:500;background:#fff;border-color:var(--dark);border-bottom:2px solid #fff;z-index:2;}
+.tabs-border{border-top:2px solid var(--dark);margin-bottom:28px;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
 
-  <!-- Google Identity Services (ללא redirect) -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-  <!-- אייקונים קטנים -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/font/lucide.css">
-
-  <style>
-    body { background:#0b0f14; color:#e9eff6; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial }
-    .card { background:#111a24; border:1px solid #1e2a39; border-radius:16px }
-    .btn  { background:#2563eb; color:#fff; border-radius:12px; padding:.65rem 1rem; font-weight:600; }
-    .btn.secondary { background:#162131; border:1px solid #1e2a39; color:#9bb8ff }
-    .muted { color:#8ea0b5 }
-    .input, select, textarea { background:#0f141b; color:#e9eff6; border:1px solid #1e2a39; border-radius:10px; padding:.55rem .75rem }
-    .ok  { color:#22c55e } .warn{ color:#f59e0b } .crit{ color:#f87171 }
-    .link{ color:#7bd6ff; text-decoration:underline; cursor:pointer }
-    table { width:100% } th, td { padding: .6rem .4rem; border-bottom:1px solid #132034; }
-    .kbd { background:#0f141b; border:1px solid #1e2a39; padding:.15rem .4rem; border-radius:.4rem; font-size:.8rem }
-  </style>
+.bullet-item{border-bottom:1px solid var(--border);}
+.bullet-item:last-child{border-bottom:none;}
+.bullet-header{display:flex;align-items:flex-start;gap:16px;padding:20px 0;cursor:pointer;user-select:none;}
+.bullet-header:hover{opacity:0.85;}
+.bullet-num{font-family:var(--mono);font-size:12px;color:var(--accent);min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--accent);border-radius:50%;flex-shrink:0;margin-top:1px;}
+.bullet-content{flex:1;}
+.bullet-label{font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:4px;}
+.bullet-text{font-size:16px;font-weight:500;color:var(--dark);line-height:1.5;}
+.bullet-arrow{width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:4px;color:var(--text-light);transition:transform 0.3s;font-size:18px;}
+.bullet-item.open .bullet-arrow{transform:rotate(180deg);}
+.bullet-expansion{max-height:0;overflow:hidden;transition:max-height 0.4s;}
+.bullet-item.open .bullet-expansion{max-height:4000px;padding-bottom:24px;}
+.expansion-inner{margin-left:44px;padding:20px 24px;background:var(--card);border-radius:8px;border:1px solid var(--border);font-size:14px;line-height:1.75;}
+.expansion-inner p{margin-bottom:14px;}
+.expansion-inner p:last-child{margin-bottom:0;}
+.comp-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12.5px;}
+.comp-table th{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;text-align:left;padding:10px 10px;background:var(--dark);color:#fff;font-weight:400;}
+.comp-table th:first-child{border-radius:6px 0 0 0;}.comp-table th:last-child{border-radius:0 6px 0 0;}
+.comp-table td{padding:9px 10px;border-bottom:1px solid #EEEAE4;vertical-align:top;}
+.comp-table tr:last-child td{border-bottom:none;}
+.ola-row td{background:var(--accent-light)!important;font-weight:500;}
+.ola-row td:first-child{color:var(--accent);}
+.cost-high{color:var(--red);font-weight:500;}
+.cost-low{color:var(--accent);font-weight:500;}
+.h2h-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;}
+.h2h-chip{font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:8px 18px;border-radius:24px;border:1.5px solid var(--border);background:var(--card);color:var(--text-light);text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
+.h2h-chip:hover{border-color:var(--text-light);color:var(--text);}
+.h2h-chip.active{background:var(--dark);color:#fff;border-color:var(--dark);}
+.h2h-card{display:none;}
+.h2h-card.active{display:block;}
+.h2h-header{display:flex;align-items:center;gap:16px;margin-bottom:8px;}
+.h2h-vs{font-family:var(--serif);font-size:13px;color:var(--text-light);font-style:italic;}
+.h2h-name-ola{font-family:var(--mono);font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:500;background:var(--accent-light);padding:6px 16px;border-radius:20px;}
+.h2h-name-comp{font-family:var(--mono);font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500;padding:6px 16px;border-radius:20px;color:var(--red);background:var(--red-light);}
+.what-block{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin-bottom:24px;}
+.what-block h4{font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:12px;}
+.what-block p{font-size:14px;line-height:1.8;margin-bottom:10px;}
+.what-block p:last-child{margin-bottom:0;}
+.what-row{display:grid;grid-template-columns:120px 1fr;gap:0;border-bottom:1px solid #EEEAE4;font-size:13.5px;}
+.what-row:last-child{border-bottom:none;}
+.what-label{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);padding:12px 0;}
+.what-val{padding:12px 0 12px 16px;line-height:1.6;}
+.vs-block{margin-top:24px;}
+.vs-block h4{font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
+.vs-row{display:grid;grid-template-columns:120px 1fr 1fr;border-bottom:1px solid #EEEAE4;}
+.vs-row:last-child{border-bottom:none;}
+.vs-dim{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);padding:14px 0;}
+.vs-cell{padding:14px 16px;font-size:13.5px;line-height:1.6;}
+.vs-cell-ola{background:var(--accent-light);border-right:1px solid #EEEAE4;}
+.vs-cell-comp{background:#FAFAF8;}
+.vs-name{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px;}
+.vs-name-ola{color:var(--accent);}
+.vs-name-comp{color:var(--red);}
+.vs-note{grid-column:span 2;background:#FAFAF8;padding:14px 16px;font-size:13.5px;line-height:1.6;font-style:italic;color:var(--text-light);}
+.bottom-bar{margin-top:48px;padding:32px 0;border-top:2px solid var(--dark);}
+.bottom-bar p{font-family:var(--serif);font-size:20px;color:var(--dark);font-style:italic;line-height:1.5;max-width:680px;}
+.footer{margin:24px 0 48px;display:flex;justify-content:space-between;}
+.footer-left,.footer-right{font-family:var(--mono);font-size:11px;color:var(--text-light);}
+@media(max-width:700px){.header{padding:24px 20px;flex-direction:column;gap:12px;align-items:flex-start;}.wrap{padding:0 20px;}.vs-row{grid-template-columns:1fr;}.expansion-inner{margin-left:0;}.tab-btn{padding:10px 14px;font-size:11px;}}
+</style>
 </head>
-<body class="min-h-screen">
-  <div class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+<body>
 
-    <!-- Header -->
-    <div class="flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <h1 class="text-2xl md:text-3xl font-bold">OlaCare Dashboard - מערכת פליאטיבית</h1>
-        <span id="envBadge" class="kbd muted">פרודקשן</span>
-      </div>
+<div class="header">
+  <div class="header-left">
+    <img src="ola_logo.png" alt="OlaCare" style="height:40px;">
+    <div class="header-title">Technology Landscape</div>
+  </div>
+  <div class="header-tag">Confidential · March 2026</div>
+</div>
 
-      <div class="flex items-center gap-2">
-        <button id="connectBtn" class="btn">התחבר עם Google Drive</button>
-        <button id="openGptBtn" class="btn secondary" title="פתח את סוכן ה-GPT בחלון חדש">GPT סוכן</button>
-        <span id="userChip" class="muted text-sm"></span>
-      </div>
+<div class="wrap">
+
+<div class="section-divider">Solutions in Senior Care</div>
+
+<div class="tabs-row">
+  <button class="tab-btn active" onclick="switchTab('all')">Overview — All Solutions</button>
+  <button class="tab-btn" onclick="switchTab('h2h')">Detailed — One by One</button>
+</div>
+<div class="tabs-border"></div>
+
+<!-- ==================== TAB 1 ==================== -->
+<div class="tab-content active" id="tab-all">
+
+  <!-- OlaCare -->
+  <div class="bullet-item" onclick="toggle(this)">
+    <div class="bullet-header"><div class="bullet-num" style="border-color:var(--accent);color:var(--accent);">✦</div><div class="bullet-content"><div class="bullet-label">OlaCare</div><div class="bullet-text">AI-powered system proven to reduce <strong>90%</strong> of falls, monitoring resident behavior and streamlining caregiver documentation. <strong>Software-only</strong>, running on existing cameras in both facilities and home care.</div></div><div class="bullet-arrow">▾</div></div>
+    <div class="bullet-expansion"><div class="expansion-inner">
+      <p><strong>What it does:</strong> OlaCare is a software-only solution that prevents falls, monitors nighttime activity, streamlines documentation, and lowers cost per bed. Using standard cameras, OlaCare's Contour Mode delivers 100% resident privacy with no video — fully HIPAA compliant. Backed by strong IP, proprietary computer vision, AI, and domain-specific VIM & VLM. The company founder holds 50+ personal patents, reflecting deep technological capability and a strong foundation for generating additional IP for OlaCare.</p>
+      <p><strong>Key capabilities:</strong> Pre-fall detection and 90% fall prevention · Fall detection with instant alerts · Violence and aggressive behavior detection · 24/7 nighttime activity monitoring (diaper changes, repositioning, wandering) · Hygiene monitoring · Streamlined caregiver documentation (AI pre-fills logs from observed care events, nurse reviews and approves — ~33% admin time reduction). OlaCare also analyzes audio for calls for help, screaming, and signs of distress.</p>
+      <p><strong>Privacy:</strong> OlaCare presents all events through a privacy-preserving contour interface — no video whatsoever. No raw video is stored. All processing is via anonymized metadata. Fully HIPAA compliant.</p>
+      <p><strong>What it costs:</strong> Hardware agnostic — software license per camera. Partners fund hardware. OlaCare provides only the AI intelligence layer, a pure SaaS model with ~85% gross margin.</p>
+      <p><strong>ROI:</strong> Average annual cost per bed in US senior care: $85,400. OlaCare projected annual savings: $42,758 per bed ($31,125 from 75% falls reduction, $11,633 from 33% paperwork reduction). Cost savings far exceed the subscription fee — immediate ROI.</p>
+      <p><strong>Target market:</strong> Assisted living facilities, nursing homes, memory care communities, and home care providers. A pure SaaS model with partner-led distribution — including medical suppliers, digital health platforms, and telecom/broadband providers who bundle OlaCare into their offerings.</p>
+    </div></div>
+  </div>
+
+  <!-- SafelyYou -->
+  <div class="bullet-item" onclick="toggle(this)">
+    <div class="bullet-header"><div class="bullet-num">1</div><div class="bullet-content"><div class="bullet-label">SafelyYou</div><div class="bullet-text">Installs a dedicated proprietary camera in each resident room for fall detection. Saves video clips of events. Offers clinical consulting. Primarily memory care, US/Canada.</div></div><div class="bullet-arrow">▾</div></div>
+    <div class="bullet-expansion"><div class="expansion-inner">
+      <p><strong>What it does:</strong> SafelyYou installs its own dedicated camera ("Guardian") in each resident's room. AI detects falls and saves a short video clip for review. Provides clinical consulting — RNs and OTs review fall incidents with staff in "Fall Huddle" sessions.</p>
+      <p><strong>What it does NOT do:</strong> Does not prevent falls (no pre-fall detection). Does not streamline caregiver documentation. Does not detect violence or aggressive behavior. Does not monitor nighttime wandering. Does not track hygiene. Does not work on existing cameras — requires its own dedicated hardware per room. Does not serve the home care market.</p>
+      <p><strong>What it costs:</strong> Dedicated camera per room + professional installation + monthly subscription + clinical services. Estimated $150–300/room/month.</p>
+      <p><strong>Privacy:</strong> Stores actual video clips of real people during fall events.</p>
+      <p><strong>Coverage:</strong> One camera per room. No hallways, common areas, or dining rooms.</p>
+      <p><strong>Scale:</strong> 800+ communities, ~$70M raised. US and Canada only.</p>
+    </div></div>
+  </div>
+
+  <!-- Vayyar -->
+  <div class="bullet-item" onclick="toggle(this)">
+    <div class="bullet-header"><div class="bullet-num">2</div><div class="bullet-content"><div class="bullet-label">Vayyar Care</div><div class="bullet-text">A radar sensor ($250+) per room that detects falls without a camera. Works in darkness and steam. Has no visual understanding — cannot identify who fell, what caused it, or distinguish caregiver from resident.</div></div><div class="bullet-arrow">▾</div></div>
+    <div class="bullet-expansion"><div class="expansion-inner">
+      <p><strong>What it does:</strong> Vayyar sells a radar sensor that mounts on the wall/ceiling of each room. Uses radio waves to detect falls, track bed occupancy, count bathroom visits, and monitor room presence. Works in total darkness and through bathroom steam.</p>
+      <p><strong>What it does NOT do:</strong> Does not prevent falls. Does not streamline documentation. Does not detect violence. Does not monitor hygiene. Has zero visual understanding — cannot see what caused a fall, cannot distinguish a caregiver bending down from a resident falling, cannot understand any interaction or situation. Alert says "fall in Room 12" with no context for what happened. Does not serve the home care market at scale.</p>
+      <p><strong>What it costs:</strong> ~$250 per sensor, one or more per room, plus monthly subscription + platform fee + setup. 100 beds = $25,000+ in sensor hardware alone, before recurring fees.</p>
+      <p><strong>Coverage:</strong> One sensor (or more) per room. No hallway or common area coverage.</p>
+      <p><strong>Scale:</strong> Part of Vayyar Imaging ($300M+ raised across all divisions). Partners: TekTone, K4Connect, Amazon Alexa.</p>
+    </div></div>
+  </div>
+
+  <!-- Nobi -->
+  <div class="bullet-item" onclick="toggle(this)">
+    <div class="bullet-header"><div class="bullet-num">3</div><div class="bullet-content"><div class="bullet-label">Nobi</div><div class="bullet-text">A smart ceiling lamp ($2,288+) with embedded camera. Detects falls and monitors sleep. Requires a licensed electrician for every room. No proven fall reduction data published.</div></div><div class="bullet-arrow">▾</div></div>
+    <div class="bullet-expansion"><div class="expansion-inner">
+      <p><strong>What it does:</strong> A ceiling lamp with embedded camera and AI that replaces the room's existing light fixture. Detects falls (asks "Are you OK?" via speaker), tracks bed exits and sleep patterns. Also includes circadian lighting.</p>
+      <p><strong>What it does NOT do:</strong> No published data on fall reduction rates. Does not streamline documentation. Does not detect violence. Does not monitor hygiene. Cannot work on existing cameras — each room requires purchasing a proprietary lamp and hiring an electrician. Not viable for large-scale home care deployment due to cost per unit.</p>
+      <p><strong>What it costs:</strong> $2,288+ per lamp. Requires licensed electrician for installation in each room. For a 100-bed facility: <strong>$228,800+ in hardware alone</strong>, plus electrician labor for every room, plus ongoing subscription.</p>
+      <p><strong>Coverage:</strong> One lamp per room only. No hallways or common areas.</p>
+      <p><strong>Scale:</strong> Belgian company, expanding into US market.</p>
+    </div></div>
+  </div>
+
+  <!-- Foresite -->
+  <div class="bullet-item" onclick="toggle(this)">
+    <div class="bullet-header"><div class="bullet-num">4</div><div class="bullet-content"><div class="bullet-label">Securitas Foresite</div><div class="bullet-text">Multi-sensor system: 3D depth camera + motion sensors + bed sheet sensor — three hardware types per room. Good fall detection, predictive risk scoring. Enterprise-only, long sales cycles.</div></div><div class="bullet-arrow">▾</div></div>
+    <div class="bullet-expansion"><div class="expansion-inner">
+      <p><strong>What it does:</strong> Installs three sensor types per room: (1) 3D depth sensor, (2) motion sensors, (3) bed sensor (fitted sheet). AI trained on 20+ years of movement data predicts fall risk and flags early health indicators (UTI, pneumonia, heart failure).</p>
+      <p><strong>What it does NOT do:</strong> Does not streamline documentation. Does not detect violence. Does not monitor hygiene. Cannot work on existing cameras. 300+ individual devices per 100 beds, plus bed sheets that wear out. Facility-only — no home care application. Enterprise-only through authorized partners — long procurement cycles.</p>
+      <p><strong>What it costs:</strong> Not public. Enterprise pricing. 3+ devices per room = 300+ devices for 100 beds. Long-term contracts.</p>
+      <p><strong>Coverage:</strong> One sensor set per room. No hallways or common areas.</p>
+      <p><strong>Scale:</strong> Division of Securitas Group (public).</p>
+    </div></div>
+  </div>
+
+  <!-- Sensi.AI -->
+  <div class="bullet-item" onclick="toggle(this)">
+    <div class="bullet-header"><div class="bullet-num">5</div><div class="bullet-content"><div class="bullet-label">Sensi.AI</div><div class="bullet-text">Audio-only monitoring via a plug-and-play device. Listens to sounds and speech 24/7 to detect health changes. Home care only. No visual capability — silent falls are invisible. $98M+ raised.</div></div><div class="bullet-arrow">▾</div></div>
+    <div class="bullet-expansion"><div class="expansion-inner">
+      <p><strong>What it does:</strong> A plug-and-play audio device placed in a senior's home. Continuously records and analyzes all environmental sounds and speech. AI detects changes in physical health, emotional state, and cognitive function. Can identify emotional and cognitive changes through voice tone and speech patterns.</p>
+      <p><strong>What it does NOT do:</strong> Cannot see anything — audio only. Cannot detect silent falls (extremely common in elderly). No visual fall prevention. No streamlined caregiver documentation. No violence detection through vision. No hygiene monitoring. No visual feedback of any kind. Home care only — does not serve facilities.</p>
+      <p><strong>Privacy concern:</strong> The system continuously records all audio in the home — every conversation, every family visit, every interaction. This may create significant discomfort for families and residents who are aware that everything said in the home is being captured and analyzed.</p>
+      <p><strong>What it costs:</strong> B2B SaaS subscription for home care agencies. $98M+ raised.</p>
+      <p><strong>Key partners:</strong> Visiting Angels, Caring Senior Service, Griswold Home Care, Assistance Home Care, Teepa Snow's Positive Approach to Care® (PAC).</p>
+    </div></div>
+  </div>
+
+  <!-- SUMMARY TABLE -->
+  <div style="margin-top:32px;">
+    <table class="comp-table">
+      <tr><th>Capability</th><th>OlaCare</th><th>SafelyYou</th><th>Vayyar</th><th>Nobi</th><th>Foresite</th><th>Sensi.AI</th></tr>
+      <tr><td>Fall Prevention (90%)</td><td class="cost-low">✓ (90%)</td><td class="cost-high">✗</td><td class="cost-high">✗</td><td class="cost-high">No data</td><td class="cost-low">Risk scoring</td><td class="cost-high">✗</td></tr>
+      <tr><td>Fall Detection</td><td class="cost-low">✓</td><td class="cost-low">✓</td><td class="cost-low">✓</td><td class="cost-low">✓</td><td class="cost-low">✓</td><td>Audio only</td></tr>
+      <tr><td>Situation Understanding</td><td class="cost-low">✓ Full context</td><td>Event clips</td><td class="cost-high">✗ None</td><td>Limited</td><td>Depth images</td><td class="cost-high">✗ None</td></tr>
+      <tr><td>Violence Detection</td><td class="cost-low">✓</td><td class="cost-high">✗</td><td class="cost-high">✗</td><td class="cost-high">✗</td><td class="cost-high">✗</td><td class="cost-high">✗</td></tr>
+      <tr><td>Streamlined Documentation</td><td class="cost-low">✓ (−33% admin)</td><td class="cost-high">✗</td><td class="cost-high">✗</td><td class="cost-high">✗</td><td class="cost-high">✗</td><td class="cost-high">✗</td></tr>
+      <tr><td>Night Monitoring</td><td class="cost-low">✓</td><td class="cost-high">✗</td><td class="cost-low">✓</td><td class="cost-low">✓</td><td class="cost-low">✓</td><td class="cost-high">✗</td></tr>
+      <tr><td>Common Areas</td><td class="cost-low">✓</td><td class="cost-high">✗</td><td class="cost-high">✗</td><td class="cost-high">✗</td><td class="cost-high">✗</td><td>N/A</td></tr>
+      <tr><td>Hardware</td><td class="cost-low">Hardware agnostic</td><td class="cost-high">Dedicated camera</td><td class="cost-high">$250+ sensor/room</td><td class="cost-high">$2,288+ lamp/room</td><td class="cost-high">3+ devices/room</td><td>Audio device</td></tr>
+      <tr><td>Facilities</td><td class="cost-low">✓</td><td class="cost-low">✓</td><td class="cost-low">✓</td><td class="cost-low">✓</td><td class="cost-low">✓</td><td class="cost-high">✗</td></tr>
+      <tr><td>Home Care</td><td class="cost-low">✓</td><td class="cost-high">✗</td><td class="cost-low">✓ (consumer)</td><td class="cost-high">Too expensive</td><td class="cost-high">✗</td><td class="cost-low">✓ (primary)</td></tr>
+      <tr><td>ROI / Cost Savings</td><td class="cost-low">$4.2M/yr per 100 beds</td><td>Not published</td><td>$250K/yr per community</td><td>Not published</td><td>Not published</td><td>Not published</td></tr>
+      <tr><td>Privacy Model</td><td class="cost-low">100% privacy, contour interface, no video</td><td class="cost-high">Stores video clips</td><td class="cost-low">No camera</td><td>Contour images available</td><td class="cost-low">Depth images only</td><td class="cost-high">Records all audio</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== TAB 2 ==================== -->
+<div class="tab-content" id="tab-h2h">
+  <div style="margin-bottom:8px;font-size:13px;color:var(--text-light);">Select a company for detailed comparison with OlaCare:</div>
+  <div class="h2h-selector">
+    <button class="h2h-chip active" onclick="switchCompany('safelyyou')">SafelyYou</button>
+    <button class="h2h-chip" onclick="switchCompany('vayyar')">Vayyar Care</button>
+    <button class="h2h-chip" onclick="switchCompany('nobi')">Nobi</button>
+    <button class="h2h-chip" onclick="switchCompany('foresite')">Securitas Foresite</button>
+    <button class="h2h-chip" onclick="switchCompany('sensi')">Sensi.AI</button>
+  </div>
+
+  <!-- SafelyYou -->
+  <div class="h2h-card active" id="h2h-safelyyou">
+    <div class="h2h-header"><div class="h2h-name-ola">OlaCare</div><div class="h2h-vs">vs.</div><div class="h2h-name-comp">SafelyYou</div></div>
+    <div class="what-block"><h4>What SafelyYou does</h4>
+      <p>Installs a dedicated proprietary camera ("Guardian") per resident room. AI detects falls and saves a short video clip. Provides clinical consulting (Fall Huddles with RNs/OTs). Memory care focus, US/Canada. 800+ communities, ~$70M raised.</p>
+      <div class="what-row"><div class="what-label">Hardware</div><div class="what-val">Dedicated proprietary camera per room. Professional installation required.</div></div>
+      <div class="what-row"><div class="what-label">Cost</div><div class="what-val">Camera + install + monthly sub + clinical services. Est. $150–300/room/month.</div></div>
     </div>
-
-    <!-- KPIs -->
-    <div class="grid md:grid-cols-3 gap-4">
-      <div class="card p-4">
-        <div class="muted text-sm">מטופלים דחופים</div>
-        <div class="text-3xl font-bold mt-1"><span id="kpiUrgent">-</span></div>
-        <div class="muted text-xs mt-1">סטטוס “דחוף”</div>
-      </div>
-      <div class="card p-4">
-        <div class="muted text-sm">מטופלים במעקב</div>
-        <div class="text-3xl font-bold mt-1"><span id="kpiFollow">-</span></div>
-        <div class="muted text-xs mt-1">סטטוס “במעקב”</div>
-      </div>
-      <div class="card p-4">
-        <div class="muted text-sm">סה״כ מטופלים</div>
-        <div class="text-3xl font-bold mt-1"><span id="kpiTotal">-</span></div>
-        <div class="muted text-xs mt-1">מבוסס על קובץ ה-Drive</div>
-      </div>
-    </div>
-
-    <!-- Patients + actions -->
-    <div class="grid md:grid-cols-3 gap-4">
-      <div class="md:col-span-2 card p-4">
-        <div class="flex items-center justify-between gap-2">
-          <div class="text-xl font-bold">רשימת מטופלים</div>
-          <div class="flex items-center gap-2">
-            <input id="searchBox" class="input" placeholder="...חפש מטופל" />
-            <button id="addPatientBtn" class="btn">+ הוסף מטופל חדש</button>
-          </div>
-        </div>
-        <div class="overflow-x-auto mt-3">
-          <table>
-            <thead class="muted text-sm">
-              <tr>
-                <th class="text-right">שם</th>
-                <th class="text-right">גיל</th>
-                <th class="text-right">אבחנה</th>
-                <th class="text-right">סטטוס</th>
-                <th class="text-right">פעולות</th>
-              </tr>
-            </thead>
-            <tbody id="patientsTbody"></tbody>
-          </table>
-          <div id="emptyState" class="muted text-sm mt-3 hidden">אין מטופלים בקובץ.</div>
-        </div>
-      </div>
-
-      <div class="card p-4">
-        <div class="text-xl font-bold mb-2">סטטיסטיקות מטופלים</div>
-        <div id="statsPanel" class="text-sm muted">—</div>
-        <div class="mt-3"><button id="saveFileBtn" class="btn secondary">שמור קובץ</button></div>
-      </div>
-    </div>
-
-    <!-- Smart query + session log -->
-    <div class="grid md:grid-cols-2 gap-4">
-      <div class="card p-4">
-        <div class="text-xl font-bold">שאילתא חכמה אל הסוכן</div>
-        <textarea id="nlq" class="input w-full mt-2" rows="3" placeholder="לדוגמה: הצג מטופלים דחופים שאין להם ביקור בשבוע הקרוב"></textarea>
-        <div class="mt-2 flex gap-2">
-          <button id="askGptBtn" class="btn">שאל את הסוכן</button>
-          <div id="gptHint" class="muted text-xs hidden">אם חלון נחסם, לחץ <span id="manualOpen" class="link">פתח את הסוכן</span>.</div>
-        </div>
-        <div id="nlqResult" class="mt-3 muted text-sm"></div>
-      </div>
-
-      <div class="card p-4">
-        <div class="text-xl font-bold">יומן פעולות (Sessions)</div>
-        <div id="sessionLog" class="muted text-sm">—</div>
-      </div>
+    <div class="vs-block"><h4>Comparison</h4>
+      <div class="vs-row"><div class="vs-dim">Platform</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> 90% fall prevention, fall detection, violence detection, streamlined documentation (−33% admin), nighttime activity monitoring, hygiene tracking.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">SafelyYou:</span> Fall detection + post-event video review + clinical consulting. No prevention, no documentation, no violence, no nighttime monitoring.</div></div>
+      <div class="vs-row"><div class="vs-dim">Hardware</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> Hardware agnostic — runs on standard existing cameras. Software license per camera.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">SafelyYou:</span> Must buy and install a dedicated proprietary camera in every room.</div></div>
+      <div class="vs-row"><div class="vs-dim">Coverage</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> All camera-covered spaces — hallways, dining rooms, common areas, resident rooms. Tracks all people simultaneously.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">SafelyYou:</span> Single resident room per dedicated camera only.</div></div>
+      <div class="vs-row"><div class="vs-dim">Privacy</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> 100% privacy — contour interface, no video whatsoever.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">SafelyYou:</span> Stores actual video clips of real people during fall events.</div></div>
+      <div class="vs-row"><div class="vs-dim">ROI</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> For a 100-bed facility: projected $4.2 million annual savings (vs. $8.5M annual cost burden).</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">SafelyYou:</span> Claims fall reduction and ER visit reduction. No published per-bed savings figure.</div></div>
+      <div class="vs-row"><div class="vs-dim">Market</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> Facilities and home care — the full senior care market.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">SafelyYou:</span> Facilities only. No home care application.</div></div>
+      <div class="vs-row"><div class="vs-dim">Their edge</div><div class="vs-note">SafelyYou has good fall detection technology with actual video for root cause analysis, and an embedded clinical team for post-event consulting. Strong brand in US memory care with 800+ deployments.</div></div>
     </div>
   </div>
 
-  <!-- מודאל הוספה/עריכה -->
-  <dialog id="patientModal" class="card p-0 w-[min(560px,92vw)]">
-    <form method="dialog" class="p-4 space-y-3">
-      <div class="text-xl font-bold" id="modalTitle">מטופל חדש</div>
-      <div class="grid md:grid-cols-2 gap-3">
-        <div>
-          <label class="muted text-sm">שם</label>
-          <input id="f_name" class="input w-full" required />
-        </div>
-        <div>
-          <label class="muted text-sm">גיל</label>
-          <input id="f_age" type="number" min="0" class="input w-full" />
-        </div>
-        <div class="md:col-span-2">
-          <label class="muted text-sm">אבחנה</label>
-          <input id="f_dx" class="input w-full" />
-        </div>
-        <div>
-          <label class="muted text-sm">סטטוס</label>
-          <select id="f_status" class="input w-full">
-            <option value="במעקב">במעקב</option>
-            <option value="דחוף">דחוף</option>
-            <option value="יציב">יציב</option>
-          </select>
-        </div>
-      </div>
-      <div class="flex justify-end gap-2 pt-2">
-        <button class="btn secondary" value="close">ביטול</button>
-        <button id="savePatientBtn" class="btn" value="save">שמור</button>
-      </div>
-    </form>
-  </dialog>
+  <!-- Vayyar -->
+  <div class="h2h-card" id="h2h-vayyar">
+    <div class="h2h-header"><div class="h2h-name-ola">OlaCare</div><div class="h2h-vs">vs.</div><div class="h2h-name-comp">Vayyar Care</div></div>
+    <div class="what-block"><h4>What Vayyar Care does</h4>
+      <p>A radar sensor on the wall/ceiling per room. Uses radio waves to detect falls and track room activity. No camera, no image. Works in total darkness and through bathroom steam. $250+ per sensor. Part of Vayyar Imaging ($300M+ total raised).</p>
+      <div class="what-row"><div class="what-label">Hardware</div><div class="what-val">$250+ per sensor. One or more per room. Professional installation. 100 beds = $25,000+ hardware.</div></div>
+    </div>
+    <div class="vs-block"><h4>Comparison</h4>
+      <div class="vs-row"><div class="vs-dim">Platform</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> 90% fall prevention, fall detection, streamlined documentation, violence detection, nighttime activity monitoring, hygiene.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Vayyar:</span> Fall detection + room activity data (bed, bathroom, presence). No prevention, no documentation, no violence, no hygiene.</div></div>
+      <div class="vs-row"><div class="vs-dim">Understanding</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> Understands the full situation and interaction — can tell a caregiver bending down from a resident falling, can read the context of any event, understands who is doing what in a room.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Vayyar:</span> Detects that movement occurred. Cannot understand what happened, who is involved, or why. Cannot tell a caregiver from a resident.</div></div>
+      <div class="vs-row"><div class="vs-dim">Hardware</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> Hardware agnostic — standard existing cameras.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Vayyar:</span> $250+ dedicated sensor per room + monthly subscription + platform fee.</div></div>
+      <div class="vs-row"><div class="vs-dim">Architecture</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> Camera per room — existing infrastructure.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Vayyar:</span> One or more dedicated sensors per room — new hardware required.</div></div>
+      <div class="vs-row"><div class="vs-dim">ROI</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> For a 100-bed facility: projected $4.2 million annual savings.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Vayyar:</span> Claims $250K annual benefit per average community.</div></div>
+      <div class="vs-row"><div class="vs-dim">Their edge</div><div class="vs-note">Vayyar's only advantage is that it works in bathrooms where there is no camera — using radar that sees through steam and darkness without any video whatsoever.</div></div>
+    </div>
+  </div>
+
+  <!-- Nobi -->
+  <div class="h2h-card" id="h2h-nobi">
+    <div class="h2h-header"><div class="h2h-name-ola">OlaCare</div><div class="h2h-vs">vs.</div><div class="h2h-name-comp">Nobi</div></div>
+    <div class="what-block"><h4>What Nobi does</h4>
+      <p>A ceiling lamp ($2,288+) with embedded camera and AI. Detects falls, monitors sleep and bed exits. Requires licensed electrician per room. No published fall reduction data. Belgian company expanding into US.</p>
+      <div class="what-row"><div class="what-label">Per room</div><div class="what-val"><strong>$2,288+ per lamp</strong> + electrician installation.</div></div>
+      <div class="what-row"><div class="what-label">100 beds</div><div class="what-val"><strong>$228,800+ in lamps</strong> + electrician labor for every room + ongoing subscription.</div></div>
+    </div>
+    <div class="vs-block"><h4>Comparison</h4>
+      <div class="vs-row"><div class="vs-dim">Platform</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> 90% fall prevention, detection, streamlined documentation, violence detection, nighttime activity monitoring, hygiene.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Nobi:</span> Fall detection + sleep monitoring + bed exit alerts. No published fall reduction rates. No documentation, no violence, no hygiene.</div></div>
+      <div class="vs-row"><div class="vs-dim">Hardware</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> Hardware agnostic — standard existing cameras.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Nobi:</span> $2,288+ proprietary lamp per room. Licensed electrician per room. 100 beds = $228,800+ hardware + labor.</div></div>
+      <div class="vs-row"><div class="vs-dim">Scale</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> Software deployments. Facility and home care, both markets.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Nobi:</span> At $2,288+ per lamp, large-scale facility deployment is extremely expensive, and mass home care is not economically viable.</div></div>
+      <div class="vs-row"><div class="vs-dim">ROI</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> For a 100-bed facility: projected $4.2 million annual savings.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Nobi:</span> No published per-bed savings data.</div></div>
+      <div class="vs-row"><div class="vs-dim">Their edge</div><div class="vs-note">Nobi provides good fall detection within its lamp's coverage area, with a design that blends into the room aesthetically.</div></div>
+    </div>
+  </div>
+
+  <!-- Foresite -->
+  <div class="h2h-card" id="h2h-foresite">
+    <div class="h2h-header"><div class="h2h-name-ola">OlaCare</div><div class="h2h-vs">vs.</div><div class="h2h-name-comp">Securitas Foresite</div></div>
+    <div class="what-block"><h4>What Securitas Foresite does</h4>
+      <p>Multi-sensor per room: 3D depth sensor + motion sensors + bed sheet sensor. AI trained on 20+ years of movement data. Predicts fall risk and flags health indicators. Enterprise-only via authorized partners.</p>
+      <div class="what-row"><div class="what-label">Hardware</div><div class="what-val">3+ devices per room. 100 beds = 300+ devices. Enterprise pricing. Long-term contracts.</div></div>
+    </div>
+    <div class="vs-block"><h4>Comparison</h4>
+      <div class="vs-row"><div class="vs-dim">Platform</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> 90% fall prevention, detection, streamlined documentation, violence detection, nighttime activity monitoring, hygiene. Facilities and home care.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Foresite:</span> Fall detection + predictive risk scoring + health indicators. No documentation, no violence, no hygiene. Facility-only.</div></div>
+      <div class="vs-row"><div class="vs-dim">Hardware</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> Hardware agnostic — standard existing cameras.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Foresite:</span> Three hardware types per room. 300+ devices per 100 beds. Bed sheets wear out.</div></div>
+      <div class="vs-row"><div class="vs-dim">Market</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> Facilities and home care.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Foresite:</span> Facility-only. Enterprise-only through authorized partners. Long procurement cycles.</div></div>
+      <div class="vs-row"><div class="vs-dim">ROI</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> For a 100-bed facility: projected $4.2 million annual savings.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Foresite:</span> Claims fall reduction and extended length of stay. No per-bed figure.</div></div>
+      <div class="vs-row"><div class="vs-dim">Their edge</div><div class="vs-note">Foresite has good fall detection backed by 20+ years of movement data. Their bed sheet sensor captures data no camera system can (pressure, restlessness). Securitas is an established healthcare brand.</div></div>
+    </div>
+  </div>
+
+  <!-- Sensi.AI -->
+  <div class="h2h-card" id="h2h-sensi">
+    <div class="h2h-header"><div class="h2h-name-ola">OlaCare</div><div class="h2h-vs">vs.</div><div class="h2h-name-comp">Sensi.AI</div></div>
+    <div class="what-block"><h4>What Sensi.AI does</h4>
+      <p>Audio-only AI via a plug-and-play device in the senior's home. Continuously records and analyzes all environmental sounds and speech to detect physical, emotional, and cognitive changes. Home care agencies only — helps them assess needs and improve care quality. $98M+ raised.</p>
+      <div class="what-row"><div class="what-label">Technology</div><div class="what-val">Audio analytics only. Continuous recording of all sound in the home. No camera, no visual feedback.</div></div>
+      <div class="what-row"><div class="what-label">Market</div><div class="what-val">Home care agencies only. Does not serve facilities.</div></div>
+      <div class="what-row"><div class="what-label">Partners</div><div class="what-val">Visiting Angels, Caring Senior Service, Griswold Home Care, Assistance Home Care, Teepa Snow / PAC.</div></div>
+    </div>
+    <div class="vs-block"><h4>Comparison</h4>
+      <div class="vs-row"><div class="vs-dim">Technology</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> Computer vision AI + proprietary VLM. Sees and understands situations, interactions, events. Contour interface with no video. Also analyzes audio — detects calls for help, screaming, and signs of distress.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Sensi.AI:</span> Audio analytics only. No visual capability of any kind. Silent falls are invisible. Also susceptible to false alarms from everyday household sounds that resemble falls or distress (objects dropping, doors slamming).</div></div>
+      <div class="vs-row"><div class="vs-dim">Platform</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> 90% fall prevention, fall detection, violence detection, streamlined documentation, nighttime activity monitoring, hygiene. Facilities and home care.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Sensi.AI:</span> Audio-based health/emotional/cognitive change detection. No fall prevention. No visual fall detection. Home care only.</div></div>
+      <div class="vs-row"><div class="vs-dim">Privacy</div><div class="vs-cell vs-cell-ola"><span class="vs-name vs-name-ola">OlaCare:</span> 100% privacy — contour interface, no video whatsoever.</div><div class="vs-cell vs-cell-comp"><span class="vs-name vs-name-comp">Sensi.AI:</span> Continuously records all audio in the home — every conversation, every family visit, every interaction is captured and analyzed. This may create significant discomfort for families.</div></div>
+      <div class="vs-row"><div class="vs-dim">Their edge</div><div class="vs-note">Sensi.AI can detect emotional and cognitive changes through voice patterns — early signs of dementia, loneliness, distress — that camera systems cannot. They will not pick up events that make no sound.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="bottom-bar">
+  <p>Every competitor solves one piece of the puzzle with dedicated hardware. OlaCare is the full operating system — on cameras that are already there.</p>
+</div>
+<div class="footer">
+  <div class="footer-left">OLACARE · GETALERT LTD</div>
+  <div class="footer-right">Confidential — For Investor & Partner Review</div>
+</div>
+
+</div>
 
 <script>
-/** ====== קונפיגורציה ====== */
-const CLIENT_ID  = "612293651011-oshbbu34j1n6kli5k8fblgmgjb5odj1l.apps.googleusercontent.com";
-const SCOPES     = [
-  "https://www.googleapis.com/auth/drive.file",
-  "https://www.googleapis.com/auth/drive.readonly",
-  "https://www.googleapis.com/auth/drive.metadata.readonly",
-  "openid","email","profile"
-].join(" ");
-
-const PATIENTS_FILE_ID = "1bmG2LiCDkbuedw4-Ku-mL3_eUm44Z3Zr";
-const SESSIONS_FILE_NAME = "Palliative_Sessions.json";
-
-const GPT_URL = "https://chatgpt.com/g/g-68fb73c350648191814c5a98839ee8ac-palliative-intelligence-agent-bilingual-copy";
-
-/** ====== State ====== */
-let accessToken = null;
-let tokenExpires = 0;
-let userProfile = null;
-let patients = [];
-let sessionFileId = null;
-let editIndex = -1;
-
-/** ====== Helpers ====== */
-const qs = sel => document.querySelector(sel);
-const qsa = sel => Array.from(document.querySelectorAll(sel));
-const byId = id => document.getElementById(id);
-
-function nowIso(){ return new Date().toISOString(); }
-function needToken(){ return !accessToken || Date.now() > tokenExpires-30_000; }
-
-function setUserChip(){
-  const el = byId("userChip");
-  if(userProfile){
-    el.textContent = `מחובר: ${userProfile.email || userProfile.name || "משתמש"}`;
-  } else el.textContent = "איכסון: לא מחובר";
+function toggle(el){el.classList.toggle('open');}
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  if(tab==='all'){document.querySelectorAll('.tab-btn')[0].classList.add('active');document.getElementById('tab-all').classList.add('active');}
+  else{document.querySelectorAll('.tab-btn')[1].classList.add('active');document.getElementById('tab-h2h').classList.add('active');}
 }
-
-function openGPT(auto=true){
-  try{
-    const w = window.open(GPT_URL, auto ? "_blank" : "_self", "noopener");
-    if(!w) byId("gptHint").classList.remove("hidden");
-  }catch{ byId("gptHint").classList.remove("hidden"); }
+function switchCompany(id){
+  document.querySelectorAll('.h2h-chip').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.h2h-card').forEach(c=>c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('h2h-'+id).classList.add('active');
 }
-
-/** ====== OAuth (GIS Token Client) ====== */
-let tokenClient = null;
-
-function initOAuth(){
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    prompt: "", // ננסה להתחבר בשקט, אם אי אפשר - יופיע prompt
-    callback: (resp) => {
-      if(resp && resp.access_token){
-        accessToken = resp.access_token;
-        tokenExpires = Date.now() + (resp.expires_in*1000);
-        fetchProfile().then(() => {
-          setUserChip();
-          // אחרי התחברות מוצלחת - פתח את הסוכן אוטומטית
-          openGPT(true);
-          bootstrap();
-        });
-      } else {
-        alert("התחברות נכשלה.");
-      }
-    }
-  });
-}
-
-async function ensureToken(){
-  if(needToken()){
-    return new Promise((resolve)=>{
-      tokenClient.callback = (resp) => {
-        if(resp && resp.access_token){
-          accessToken = resp.access_token;
-          tokenExpires = Date.now() + (resp.expires_in*1000);
-          resolve();
-        } else resolve();
-      };
-      tokenClient.requestAccessToken();
-    });
-  }
-}
-
-async function fetchProfile(){
-  await ensureToken();
-  const resp = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-    headers: { Authorization: "Bearer "+accessToken }
-  });
-  userProfile = await resp.json().catch(()=>null);
-}
-
-/** ====== Drive API ====== */
-async function driveGetFileContent(fileId){
-  await ensureToken();
-  const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-    headers: { Authorization: "Bearer "+accessToken }
-  });
-  if(!resp.ok){
-    if(resp.status===404) return null;
-    throw new Error("Drive get failed");
-  }
-  return await resp.json().catch(()=>null);
-}
-
-async function drivePatchJson(fileId, obj){
-  await ensureToken();
-  const resp = await fetch(
-    `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
-    {
-      method: "PATCH",
-      headers: {
-        "Authorization": "Bearer "+accessToken,
-        "Content-Type": "application/json; charset=UTF-8"
-      },
-      body: JSON.stringify(obj)
-    }
-  );
-  if(!resp.ok) throw new Error("Drive patch failed");
-  return await resp.json().catch(()=>null);
-}
-
-async function driveSearchByName(name){
-  await ensureToken();
-  const q = encodeURIComponent(`name='${name.replaceAll("'", "\\'")}' and trashed=false`);
-  const resp = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`, {
-    headers: { Authorization: "Bearer "+accessToken }
-  });
-  const data = await resp.json().catch(()=>({files:[]}));
-  return (data.files && data.files[0]) ? data.files[0] : null;
-}
-
-async function driveCreateJsonFile(name, obj){
-  await ensureToken();
-  // יצירה -> עדכון תוכן
-  const metaResp = await fetch("https://www.googleapis.com/drive/v3/files", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer "+accessToken,
-      "Content-Type": "application/json; charset=UTF-8"
-    },
-    body: JSON.stringify({ name, mimeType: "application/json" })
-  });
-  if(!metaResp.ok) throw new Error("Create file failed");
-  const meta = await metaResp.json();
-  await drivePatchJson(meta.id, obj);
-  return meta;
-}
-
-/** ====== Patients / Sessions ====== */
-async function loadPatients(){
-  const data = await driveGetFileContent(PATIENTS_FILE_ID);
-  patients = Array.isArray(data) ? data : (data?.patients ?? []);
-  if(!Array.isArray(patients)) patients = [];
-}
-
-async function savePatients(){
-  await drivePatchJson(PATIENTS_FILE_ID, patients);
-}
-
-async function ensureSessionsFile(){
-  const found = await driveSearchByName(SESSIONS_FILE_NAME);
-  if(found){ sessionFileId = found.id; return; }
-  const meta = await driveCreateJsonFile(SESSIONS_FILE_NAME, []);
-  sessionFileId = meta.id;
-}
-
-async function appendSession(event){
-  if(!sessionFileId) await ensureSessionsFile();
-  const log = await driveGetFileContent(sessionFileId) || [];
-  log.push({
-    ts: nowIso(),
-    user: userProfile?.email || "anonymous",
-    event
-  });
-  await drivePatchJson(sessionFileId, log);
-  renderSessions(log);
-}
-
-/** ====== UI Rendering ====== */
-function renderPatients(){
-  const body = byId("patientsTbody");
-  body.innerHTML = "";
-  const term = byId("searchBox").value.trim().toLowerCase();
-
-  const filtered = patients.filter(p =>
-    !term ||
-    (p.name||"").toLowerCase().includes(term) ||
-    (p.dx||"").toLowerCase().includes(term)
-  );
-
-  if(filtered.length===0){
-    byId("emptyState").classList.remove("hidden");
-  } else byId("emptyState").classList.add("hidden");
-
-  for(const [i,p] of filtered.entries()){
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${escapeHtml(p.name||"")}</td>
-      <td>${p.age ?? ""}</td>
-      <td>${escapeHtml(p.dx||"")}</td>
-      <td>
-        <select data-idx="${i}" class="input statusSel">
-          ${["במעקב","דחוף","יציב"].map(s=>`<option ${p.status===s?"selected":""}>${s}</option>`).join("")}
-        </select>
-      </td>
-      <td>
-        <button class="btn secondary editBtn" data-idx="${i}">ערוך</button>
-        <button class="btn secondary delBtn"  data-idx="${i}">מחק</button>
-      </td>
-    `;
-    body.appendChild(tr);
-  }
-
-  // האזנות
-  qsa(".statusSel").forEach(sel=>{
-    sel.addEventListener("change", async (e)=>{
-      const idx = Number(e.target.getAttribute("data-idx"));
-      const p = filtered[idx];
-      // מצא אינדקס אמיתי ברשימה המלאה
-      const realIndex = patients.findIndex(x=>x===p);
-      patients[realIndex].status = e.target.value;
-      await savePatients();
-      await appendSession({type:"status_change", id:patients[realIndex].id||null, status:e.target.value});
-      computeKpis();
-    });
-  });
-  qsa(".editBtn").forEach(btn=>{
-    btn.addEventListener("click",(e)=>{
-      const idx = Number(e.currentTarget.getAttribute("data-idx"));
-      const p = filtered[idx];
-      editIndex = patients.findIndex(x=>x===p);
-      openModal(p);
-    });
-  });
-  qsa(".delBtn").forEach(btn=>{
-    btn.addEventListener("click", async (e)=>{
-      const idx = Number(e.currentTarget.getAttribute("data-idx"));
-      const p = filtered[idx];
-      const realIndex = patients.findIndex(x=>x===p);
-      if(confirm(`למחוק את "${patients[realIndex].name}"?`)){
-        const removed = patients.splice(realIndex,1)[0];
-        await savePatients();
-        await appendSession({type:"delete_patient", id:removed.id||null, name:removed.name});
-        renderPatients();
-        computeKpis();
-      }
-    });
-  });
-}
-
-function computeKpis(){
-  byId("kpiTotal").textContent  = String(patients.length);
-  byId("kpiUrgent").textContent = String(patients.filter(p=>p.status==="דחוף").length);
-  byId("kpiFollow").textContent = String(patients.filter(p=>p.status==="במעקב").length);
-  byId("statsPanel").textContent =
-    `דחוף: ${byId("kpiUrgent").textContent} • במעקב: ${byId("kpiFollow").textContent} • סה״כ: ${byId("kpiTotal").textContent}`;
-}
-
-function renderSessions(list){
-  const el = byId("sessionLog");
-  if(!Array.isArray(list) || list.length===0){ el.textContent = "—"; return; }
-  el.innerHTML = list.slice(-15).reverse().map(s =>
-    `<div class="mb-1"><span class="muted">${escapeHtml(s.ts)}</span> • ${escapeHtml(s.user)} • ${escapeHtml(JSON.stringify(s.event))}</div>`
-  ).join("");
-}
-
-/** ====== Modal ====== */
-function openModal(p=null){
-  byId("modalTitle").textContent = p ? "עריכת מטופל" : "מטופל חדש";
-  byId("f_name").value   = p?.name || "";
-  byId("f_age").value    = p?.age ?? "";
-  byId("f_dx").value     = p?.dx || "";
-  byId("f_status").value = p?.status || "במעקב";
-  byId("patientModal").showModal();
-}
-function closeModal(){
-  byId("patientModal").close();
-}
-
-byId("savePatientBtn").addEventListener("click", async (e)=>{
-  e.preventDefault();
-  const item = {
-    id: crypto.randomUUID(),
-    name: byId("f_name").value.trim(),
-    age: Number(byId("f_age").value||0),
-    dx:  byId("f_dx").value.trim(),
-    status: byId("f_status").value
-  };
-  if(!item.name){ alert("שם נדרש"); return; }
-
-  if(editIndex>=0){
-    patients[editIndex] = { ...patients[editIndex], ...item, id: patients[editIndex].id || item.id };
-    await savePatients();
-    await appendSession({type:"update_patient", id:patients[editIndex].id, name:item.name});
-  } else {
-    patients.push(item);
-    await savePatients();
-    await appendSession({type:"create_patient", id:item.id, name:item.name});
-  }
-  editIndex = -1;
-  closeModal();
-  renderPatients();
-  computeKpis();
-});
-
-/** ====== NLQ to GPT (dummy hook) ======
- * בפועל, פתיחת הסוכן היא בחלון חדש לשיחה ישירה.
- * כאן אנחנו מתעדים את השאילתה ב-Sessions ושומרים בתצוגה.
- */
-byId("askGptBtn").addEventListener("click", async ()=>{
-  const q = byId("nlq").value.trim();
-  if(!q){ byId("nlqResult").textContent = "נא להזין שאילתא."; return; }
-  await appendSession({type:"nlq", q});
-  byId("nlqResult").textContent = "השאילתה תועדה ונשלחה לסוכן. המשך את השיח בחלון ה-GPT.";
-  openGPT(false);
-});
-
-/** ====== Bootstrap ====== */
-function escapeHtml(s){ return (s??"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
-
-async function bootstrap(){
-  await ensureSessionsFile();
-  renderSessions(await driveGetFileContent(sessionFileId) || []);
-  await loadPatients();
-  renderPatients();
-  computeKpis();
-}
-
-/** ====== UI events ====== */
-byId("connectBtn").addEventListener("click", ()=>{
-  tokenClient.requestAccessToken({prompt: ""});
-});
-byId("openGptBtn").addEventListener("click", ()=> openGPT(true));
-byId("manualOpen").addEventListener("click", ()=> openGPT(true));
-byId("addPatientBtn").addEventListener("click", ()=>{ editIndex=-1; openModal(); });
-byId("saveFileBtn").addEventListener("click", async ()=>{
-  await savePatients();
-  await appendSession({type:"manual_save"});
-  alert("הקובץ נשמר בהצלחה.");
-});
-byId("searchBox").addEventListener("input", renderPatients);
-
-/** ====== Auto start: ננסה להתחבר ולפתוח סוכן בלי שאלות ====== */
-window.addEventListener("load", ()=>{
-  initOAuth();
-  // ניסיון אוטומטי לשקט. אם נחסם ע״י הדפדפן, המשתמש יראה את כפתור "התחבר".
-  setTimeout(()=> {
-    tokenClient.requestAccessToken({prompt: ""});
-  }, 300);
-});
 </script>
 </body>
 </html>
